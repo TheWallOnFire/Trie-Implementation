@@ -1,6 +1,6 @@
 #include "algorithms.h"
 const string WORD_FILE = "data/words.txt";
-const string TEST_INPUT = "data/test.txt";
+const string TEST_INPUT = "data/testcase.txt";
 const string TEST_OUTPUT = "data/test_result.csv";
 
 // Create K_Node
@@ -408,7 +408,7 @@ bool loadWordsFromFile(const string& filename, HashTable* hashTable) {
 
 // Function to simulate user commands on the hash table
 void HashTableTesting() {
-	HashTable* hashTable = NULL;
+	HashTable* hashTable = new HashTable;
 
 	// create dataset for testing
 	auto start = std::chrono::high_resolution_clock::now();

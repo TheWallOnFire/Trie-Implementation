@@ -141,6 +141,7 @@
     <Text Include="data\testcase.txt" />
     <Text Include="data\words.txt" />
     <Text Include="demo.txt" />
+    <Text Include="source\info.txt" />
     <Text Include="source\readme.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

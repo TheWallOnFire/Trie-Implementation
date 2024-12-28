@@ -1,0 +1,15 @@
+## INFO ##
+
+# Link
+- Github: https://github.com/TheWallOnFire/Trie-Implementation
+
+# Hardware
+- Window 10
+- Processor: Intel(R) Core(TM) i5-10400H CPU @ 2.60GHz   2.59 GHz
+- Ram: 32.0 GB
+
+# TRIE
+- A trie (pronounced "try") is a specialized tree data structure used for efficiently storing 
+and searching a set of strings, such as words in a dictionary. It is also known as a prefix 
+tree because it is particularly well-suited for operations involving prefixes.
+- 

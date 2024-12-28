@@ -1,7 +1,10 @@
 #include "algorithms.h"
+#include "libs.h"
+
 const string WORD_FILE = "data/words.txt";
 const string TEST_INPUT = "data/testcase.txt";
 const string TEST_OUTPUT = "data/test_result.csv";
+const string WORD_LOG = "data/log.txt";
 
 // Create K_Node
 K_NODE* createNode(int k)
@@ -36,7 +39,7 @@ void deleteNode(K_NODE* node)
 
 
 // Print word from prefix
-void coutWord(TRIE* trie, string prefix, int& n, int& comp)
+void searchPrefix(TRIE* trie, string prefix, int& n, int& comp)
 {
 	if (!trie || !isAllLowercase(prefix)) {
 		cout << "Error!\n";
@@ -45,9 +48,11 @@ void coutWord(TRIE* trie, string prefix, int& n, int& comp)
 
 	// Find prefix in trie
 	K_NODE* curr = trie->root;
+	if (!curr) return;
+
 	string word = {};
-	for (char ch : prefix) {
-		comp++;
+	for (int i = 0; i < prefix.size(); i++, comp++) {
+		char ch = prefix[i];
 		if (++comp && curr->child[(int)(ch - 'a')]) {
 			curr = curr->child[(int)(ch - 'a')];
 		}
@@ -55,9 +60,9 @@ void coutWord(TRIE* trie, string prefix, int& n, int& comp)
 	}
 
 	// Cout n words that start with given prefix
-	coutNode(curr, prefix, n, comp);
+	searchNode(curr, prefix, n, comp);
 }
-void coutNode(K_NODE* node, string prefix, int& n, int& comp)
+void searchNode(K_NODE* node, string prefix, int& n, int& comp)
 {
 	// Checking condition
 	if (n < 1 || !node) return;
@@ -70,10 +75,10 @@ void coutNode(K_NODE* node, string prefix, int& n, int& comp)
 
 	// Recursion for each child
 	for (int i = 0; i < 26 && n > 0; i++, ++comp) {
-		if (++comp && node->child[i]) {
+		if (node->child[i]) {
 			string word = prefix;
 			word += (char)(i + 'a');
-			coutNode(node->child[i], word, n, comp);
+			searchNode(node->child[i], word, n, comp);
 		}
 	}
 }
@@ -128,6 +133,7 @@ void removeWord(TRIE* trie, string word, int& comp)
 	}
 
 	K_NODE* curr = trie->root;
+	if (!curr) return;
 	K_NODE* temp = NULL; // Nearest multibranch Node from curr
 	char c = 'a';
 
@@ -221,33 +227,46 @@ TRIE* loadTrie(string filename)
 
 // Test Trie
 void TrieTesting() {
-	// Create trie
-	TRIE* trie = NULL;
-
-	// Load data and measure time
 	auto start = std::chrono::high_resolution_clock::now();
-	trie = loadTrie(WORD_FILE);
-	auto end = std::chrono::high_resolution_clock::now();
+	auto end = start; 
 	auto timer = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 	float time = (float)(timer.count()) / 1'000'000.0;
 
-	if (!trie) {
-		cout << "Can't create trie from " << WORD_FILE << endl;
-		return;
+	cout << "Load trie from file? (YES/NO)";
+	string input; cin >> input;
+	TRIE* trie = nullptr;
+	if (input == "YES") {
+		// Load data and measure time
+		start = std::chrono::high_resolution_clock::now();
+		trie = loadTrie(WORD_FILE);
+		end = std::chrono::high_resolution_clock::now();
+		timer = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+		time = (float)(timer.count()) / 1'000'000.0;
+		if (!trie) {
+			cout << "Can't create trie from " << WORD_FILE << endl;
+			return;
+		}
+		else cout << "Trie created from " << WORD_FILE << endl;
+		// Cout and save result
+		cout << "Time for creating trie from " << WORD_FILE << ":" << time << endl;
+
 	}
-	else cout << "Trie created from " << WORD_FILE << endl;
-
-	// Cout and save result
-	cout << left << setw(15) << "Time for creating trie from " << WORD_FILE << endl
-		<< setw(10) << time << endl;
-
-
+	else {
+		trie = new TRIE;
+		trie->root = createNode('a');
+	}
+	clearContentOfFile(WORD_LOG);
+	
+	// Time stop
 	while (true) {
-		int cmd = 0;
-		cout << "0->Stop\n1->Add new word\n2->Find words\n3->Remove word\n";
-		cout << "Enter command: "; cin >> cmd;
+		int cmd = 0; int comp = 0;
 
-		int comp = 0;
+		cout << "\n########LIST OF COMMANDS!###########\n"
+			<< "0->End Program\n"
+			<< "1->Add new word\n"
+			<< "2->Search words\n"
+			<< "3->Remove word\n";
+		cout << "Enter command: "; cin >> cmd;
 
 		switch (cmd) {
 		case 0: {
@@ -261,6 +280,7 @@ void TrieTesting() {
 			string word; cin >> word;
 
 			// Measure time
+			appendToFile(WORD_LOG, "Add: " + word);
 			start = std::chrono::high_resolution_clock::now();
 			addWord(trie, word, comp);
 			end = std::chrono::high_resolution_clock::now();
@@ -276,10 +296,13 @@ void TrieTesting() {
 			string word; cin >> word;
 			cout << "Number of words:";
 			int n = 0; cin >> n;
+			if (n < 0) n = 0;
 
 			// Measure time
+			appendToFile(WORD_LOG, "Prefix: " + word);
+			appendToFile(WORD_LOG, "Number: " + to_string(n));
 			start = std::chrono::high_resolution_clock::now();
-			coutWord(trie, word, n, comp);
+			searchPrefix(trie, word, n, comp);
 			end = std::chrono::high_resolution_clock::now();
 			timer = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 			time = (float)(timer.count()) / 1'000'000.0;
@@ -294,6 +317,7 @@ void TrieTesting() {
 			string word; cin >> word;
 
 			// Measure time
+			appendToFile(WORD_LOG, "Remove: " + word);
 			start = std::chrono::high_resolution_clock::now();
 			removeWord(trie, word, comp);
 			end = std::chrono::high_resolution_clock::now();
@@ -308,8 +332,12 @@ void TrieTesting() {
 			continue;
 		}
 		}
+		// Debug time
 		cout << "Time running: " << time << endl;
 		cout << "Comparison  : " << comp << endl;
+		const string log = to_string(time) + "(s)-----" + to_string(comp) + "(time)";
+		appendToFile(WORD_LOG, log);
+		cout << "Store into " << WORD_LOG << endl;
 	}
 	deleteTrie(trie); trie = NULL;
 }
@@ -354,7 +382,7 @@ void removeWord(HashTable* hashTable, const string& word, int& comp) {
 }
 
 // Function to find words starting from a given prefix
-void coutWord(HashTable* hashTable, const string& prefix, int n, int& comp) {
+void searchPrefix(HashTable* hashTable, const string& prefix, int n, int& comp) {
 	// Check if the prefix exists in the hash table
 	if (hashTable->table.find(prefix) != hashTable->table.end()) {
 		auto& wordList = hashTable->table[prefix];
@@ -375,6 +403,12 @@ void coutWord(HashTable* hashTable, const string& prefix, int n, int& comp) {
 	else {
 		cout << "No words found with the prefix \"" << prefix << "\"." << endl;
 	}
+}
+
+HashTable* createHashTable()
+{
+	HashTable* hash = new HashTable;
+	return hash;
 }
 
 // Function to load words from a file into the hash table
@@ -475,7 +509,7 @@ void HashTableTesting() {
 			auto start = std::chrono::high_resolution_clock::now();
 
 			// Call the function
-			coutWord(hashTable, prefix, n, comp);
+			searchPrefix(hashTable, prefix, n, comp);
 
 			// Record end time
 			auto end = std::chrono::high_resolution_clock::now();
@@ -532,25 +566,22 @@ void Comparisons()
 		return;
 	}
 
-	// create dataset for testing
-	auto start = std::chrono::high_resolution_clock::now();
-	auto end = std::chrono::high_resolution_clock::now();
-	auto timer = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-	float time = 0;
+	// Load words
+	output << "Load word,time\n";
 
 	// Trie
-	start = std::chrono::high_resolution_clock::now();
+	auto start = std::chrono::high_resolution_clock::now();
 	TRIE* trie = loadTrie(WORD_FILE);
-	end = std::chrono::high_resolution_clock::now();
-	timer = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-	time = (float)(timer.count()) / 1'000'000.0;
+	auto end = std::chrono::high_resolution_clock::now();
+	auto timer = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+	float time = (float)(timer.count()) / 1'000'000.0;
 
 	// Cout and save result
 	cout << left << setw(15) << "Create trie time:" << setw(10) << time << endl;
-
+	output << "Trie," << time << endl;
 
 	// Hash Table
-	HashTable* hashtable = new HashTable;
+	HashTable* hashtable = createHashTable();
 	start = std::chrono::high_resolution_clock::now();
 	loadWordsFromFile(WORD_FILE, hashtable);
 	end = std::chrono::high_resolution_clock::now();
@@ -559,13 +590,13 @@ void Comparisons()
 
 	// Cout and save result
 	cout << left << setw(15) << "Create hash table time:" << setw(10) << time << endl;
-
-
+	output << "Hash Table," << time << endl;
 
 	// Load data
 	vector<string> listOfWords = loadWordsFromFile(TEST_INPUT);
 	int numberOfWords[] = { 1,5,10,15 };
 	size_t n = sizeof(numberOfWords) / sizeof(numberOfWords[0]);
+	output << "\nFind words from prefix\n";
 
 	// Loop 
 	for (int i = 0; i < n; i++) {
@@ -586,25 +617,25 @@ void Comparisons()
 
 			// Trie
 			start = std::chrono::high_resolution_clock::now();
-			coutWord(trie, word, count, comp);
+			searchPrefix(trie, word, count, comp);
 			end = std::chrono::high_resolution_clock::now();
 			timer = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 			time = (float)(timer.count()) / 1'000'000.0;
 
 			// Cout and save result
-			cout << left << setw(15) << "Running time:" << setw(10) << time << "|"
+			cout << left << setw(15) <<	 "Running time:" << setw(10) << time << "|"
 				<< left << setw(10) << "Comparisons: " << setw(10) << comp << endl;
 			output << time << "," << comp << ",";
 		}
-		output << endl << "Hash Table,,";
 
 		// Test trie - Find word
+		output << endl << "Hash Table,,";
 		for (string word : listOfWords) {
 			int comp = 0;  int count = numberOfWords[i];
 
 			// Trie
 			start = std::chrono::high_resolution_clock::now();
-			coutWord(hashtable, word, count, comp);
+			searchPrefix(hashtable, word, count, comp);
 			end = std::chrono::high_resolution_clock::now();
 			timer = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 			time = (float)(timer.count()) / 1'000'000.0;
@@ -617,6 +648,27 @@ void Comparisons()
 		output << endl;
 	}
 
+	// Deallocate
+	output << "\nDeallocate,time" << endl;
+	// Trie
+	start = std::chrono::high_resolution_clock::now();
 	deleteTrie(trie);
+	end = std::chrono::high_resolution_clock::now();
+	timer = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+	time = (float)(timer.count()) / 1'000'000.0;
+
+	// Cout and save result
+	cout << left << setw(15) << "Delete trie time:" << setw(10) << time << endl;
+	output << "Trie," << time << endl;
+
+	// Hash Table
+	start = std::chrono::high_resolution_clock::now();
 	delete hashtable;
+	end = std::chrono::high_resolution_clock::now();
+	timer = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+	time = (float)(timer.count()) / 1'000'000.0;
+
+	// Cout and save result
+	cout << left << setw(15) << "Delete hash table time:" << setw(10) << time << endl;
+	output << "Hash table," << time << endl;
 }

@@ -1,5 +1,6 @@
 #pragma once
-#include "libs.h"
+#include <iostream>
+#include <unordered_map>
 
 
 // K_NODE implementation
@@ -24,33 +25,32 @@ struct TRIE {
 };
 
 
-void coutWord(TRIE* trie, string prefix, int& n, int& comp);
-void coutNode(K_NODE* node, string prefix, int& n, int& comp);
-void addWord(TRIE* trie, string word, int& comp);
+void searchPrefix(TRIE* trie, std::string prefix, int& n, int& comp);
+void searchNode(K_NODE* node, std::string prefix, int& n, int& comp);
+void addWord(TRIE* trie, std::string word, int& comp);
 void addNode(K_NODE* node, char key, int& comp);
-void removeWord(TRIE* trie, string word, int& comp);
+void removeWord(TRIE* trie, std::string word, int& comp);
 void removeNode(K_NODE* node, int& comp);
 
 
 TRIE* createTrie();
 void deleteTrie(TRIE* trie);
-TRIE* loadTrie(string filename = "words.txt");
+TRIE* loadTrie(std::string filename = "words.txt");
 void TrieTesting();
 
 
 // Hash Table implementation
 // Define the struct to store the unordered_map
 struct HashTable {
-	unordered_map<string, vector<string>> table;
+	std::unordered_map<std::string, std::vector<std::string>> table;
 };
 
-void addWord(HashTable* hashTable, const string& word, int& comp);
+void addWord(HashTable* hashTable, const std::string& word, int& comp);
+void removeWord(HashTable* hashTable, const std::string& word, int& comp);
+void searchPrefix(HashTable* hashTable, const std::string& prefix, int n, int& comp);
 
-void removeWord(HashTable* hashTable, const string& word, int& comp);
-
-void coutWord(HashTable* hashTable, const string& prefix, int n, int& comp);
-
-bool loadWordsFromFile(const string& filename, HashTable* hashTable);
+HashTable* createHashTable();
+bool loadWordsFromFile(const std::string& filename, HashTable* hashTable);
 
 void HashTableTesting();
 

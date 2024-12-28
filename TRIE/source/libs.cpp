@@ -29,3 +29,20 @@ vector<string> loadWordsFromFile(const string& filename) {
 
     return words;
 }
+
+
+void appendToFile(const string& filename, const string& word)
+{
+    ofstream output;
+    output.open(filename, ios::out | ios::app);
+    output << word << endl;
+    output.close();
+}
+
+void clearContentOfFile(const string& filename)
+{
+    ofstream output;
+    output.open(filename, ios::out);
+    output << "";
+    output.close();
+}

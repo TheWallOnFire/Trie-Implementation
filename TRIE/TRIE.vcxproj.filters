@@ -44,5 +44,6 @@
     <Text Include="data\testcase.txt" />
     <Text Include="source\readme.txt" />
     <Text Include="demo.txt" />
+    <Text Include="source\info.txt" />
   </ItemGroup>
 </Project>
